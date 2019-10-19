@@ -100,13 +100,15 @@ resource "libvirt_domain" "example" {
   }
   provisioner "remote-exec" {
     inline = [
-      "id",
-      "uname -a",
-      "cat /etc/os-release",
-      "echo \"machine-id is $(cat /etc/machine-id)\"",
-      "lsblk -x KNAME -o KNAME,SIZE,TRAN,SUBSYSTEMS,FSTYPE,UUID,LABEL,MODEL,SERIAL",
-      "mount | grep ^/dev",
-      "df -h",
+      <<-EOF
+      id
+      uname -a
+      cat /etc/os-release
+      echo "machine-id is $(cat /etc/machine-id)"
+      lsblk -x KNAME -o KNAME,SIZE,TRAN,SUBSYSTEMS,FSTYPE,UUID,LABEL,MODEL,SERIAL
+      mount | grep ^/dev
+      df -h
+      EOF
     ]
     connection {
       type = "ssh"
