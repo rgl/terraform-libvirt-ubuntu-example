@@ -33,6 +33,8 @@ resource "libvirt_cloudinit_disk" "example_cloudinit" {
   name = "${var.prefix}_example_cloudinit.iso"
   user_data = <<EOF
 #cloud-config
+fqdn: example.test
+manage_etc_hosts: true
 users:
   - name: vagrant
     passwd: '$6$rounds=4096$NQ.EmIrGxn$rTvGsI3WIsix9TjWaDfKrt9tm3aa7SX7pzB.PSjbwtLbsplk1HsVzIrZbXwQNce6wmeJXhCq9YFJHDx9bXFHH.'
@@ -95,16 +97,18 @@ resource "libvirt_domain" "example" {
   network_interface {
     network_id = libvirt_network.example.id
     wait_for_lease = true
-    hostname = "example"
     addresses = ["10.17.3.2"]
   }
   provisioner "remote-exec" {
     inline = [
       <<-EOF
+      set -x
       id
       uname -a
       cat /etc/os-release
       echo "machine-id is $(cat /etc/machine-id)"
+      hostname --fqdn
+      cat /etc/hosts
       lsblk -x KNAME -o KNAME,SIZE,TRAN,SUBSYSTEMS,FSTYPE,UUID,LABEL,MODEL,SERIAL
       mount | grep ^/dev
       df -h
