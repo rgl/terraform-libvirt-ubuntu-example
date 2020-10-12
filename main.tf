@@ -117,12 +117,12 @@ resource "libvirt_domain" "example" {
     connection {
       type = "ssh"
       user = "vagrant"
-      host = self.network_interface[0].addresses[0]
+      host = self.network_interface[0].addresses[0] # see https://github.com/dmacvicar/terraform-provider-libvirt/issues/660
       private_key = file("~/.ssh/id_rsa")
     }
   }
 }
 
 output "ip" {
-  value = libvirt_domain.example.network_interface[0].addresses[0]
+  value = length(libvirt_domain.example.network_interface[0].addresses) > 0 ? libvirt_domain.example.network_interface[0].addresses[0] : ""
 }
