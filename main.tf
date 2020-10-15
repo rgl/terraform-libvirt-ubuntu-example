@@ -81,9 +81,9 @@ EOF
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.6.2/website/docs/r/volume.html.markdown
 resource "libvirt_volume" "example_root" {
   name = "${var.prefix}_root.img"
-  base_volume_name = "ubuntu-18.04-amd64_vagrant_box_image_0.img"
+  base_volume_name = "ubuntu-20.04-amd64_vagrant_box_image_0.img"
   format = "qcow2"
-  size = 66*1024*1024*1024 # 66GiB. this root FS is automatically resized by cloud-initramfs-growroot (included in the rgl/ubuntu-vagrant image).
+  size = 66*1024*1024*1024 # 66GiB. the root FS is automatically resized by cloud-init growpart (see https://cloudinit.readthedocs.io/en/latest/topics/examples.html#grow-partitions).
 }
 
 # a data disk.
