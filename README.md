@@ -37,6 +37,9 @@ Launch this example:
 terraform init
 terraform plan -out=tfplan
 time terraform apply tfplan
+virsh dumpxml terraform_example
+virsh qemu-agent-command terraform_example '{"execute":"guest-info"}' --pretty
+virsh qemu-agent-command terraform_example '{"execute":"guest-network-get-interfaces"}' --pretty
 ssh-keygen -f ~/.ssh/known_hosts -R "$(terraform output --raw ip)"
 ssh "vagrant@$(terraform output --raw ip)"
 time terraform destroy -force
