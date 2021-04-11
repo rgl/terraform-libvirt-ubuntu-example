@@ -127,6 +127,7 @@ resource "libvirt_domain" "example" {
       echo "machine-id is $(cat /etc/machine-id)"
       hostname --fqdn
       cat /etc/hosts
+      sudo sfdisk -l
       lsblk -x KNAME -o KNAME,SIZE,TRAN,SUBSYSTEMS,FSTYPE,UUID,LABEL,MODEL,SERIAL
       mount | grep ^/dev
       df -h
