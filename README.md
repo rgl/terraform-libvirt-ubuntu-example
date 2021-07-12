@@ -1,5 +1,7 @@
 # Usage (Ubuntu 20.04 host)
 
+Create and install the [base Ubuntu vagrant box](https://github.com/rgl/ubuntu-vagrant).
+
 Install Terraform:
 
 ```bash
