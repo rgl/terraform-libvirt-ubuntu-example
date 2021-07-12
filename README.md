@@ -34,3 +34,16 @@ Destroy the infrastructure:
 ```bash
 time terraform destroy -auto-approve
 ```
+
+# Virtual BMC
+
+You can externally control the VM using the following terraform providers:
+
+* [vbmc terraform provider](https://registry.terraform.io/providers/rgl/vbmc)
+  * exposes an [IPMI](https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface) endpoint.
+  * you can use it with [ipmitool](https://github.com/ipmitool/ipmitool).
+  * for more information see the [rgl/terraform-provider-vbmc](https://github.com/rgl/terraform-provider-vbmc) repository.
+* [sushy-vbmc terraform provider](https://registry.terraform.io/providers/rgl/sushy-vbmc)
+  * exposes a [Redfish](https://en.wikipedia.org/wiki/Redfish_(specification)) endpoint.
+  * you can use it with [redfishtool](https://github.com/DMTF/Redfishtool).
+  * for more information see the [rgl/terraform-provider-sushy-vbmc](https://github.com/rgl/terraform-provider-sushy-vbmc) repository.
