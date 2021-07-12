@@ -9,28 +9,6 @@ sudo install terraform /usr/local/bin
 rm terraform terraform_*_linux_amd64.zip
 ```
 
-Install the [terraform libvirt provider](https://github.com/dmacvicar/terraform-provider-libvirt):
-
-```bash
-wget https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v0.6.3/terraform-provider-libvirt-0.6.3+git.1604843676.67f4f2aa.Ubuntu_20.04.amd64.tar.gz
-tar xf terraform-provider-libvirt-0.6.3+git.1604843676.67f4f2aa.Ubuntu_20.04.amd64.tar.gz
-install -d ~/.local/share/terraform/plugins/registry.terraform.io/dmacvicar/libvirt/0.6.3/linux_amd64
-install terraform-provider-libvirt ~/.local/share/terraform/plugins/registry.terraform.io/dmacvicar/libvirt/0.6.3/linux_amd64/
-rm terraform-provider-libvirt terraform-provider-libvirt-*.amd64.tar.gz
-```
-
-Or install it from source:
-
-```bash
-sudo apt-get install -y libvirt-dev
-git clone https://github.com/dmacvicar/terraform-provider-libvirt.git
-cd terraform-provider-libvirt
-make
-install -d ~/.local/share/terraform/plugins/registry.terraform.io/dmacvicar/libvirt/0.6.3/linux_amd64
-install terraform-provider-libvirt ~/.local/share/terraform/plugins/registry.terraform.io/dmacvicar/libvirt/0.6.3/linux_amd64/
-cd ..
-```
-
 Create the infrastructure:
 
 ```bash

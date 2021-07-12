@@ -12,10 +12,11 @@ terraform {
       source = "hashicorp/template"
       version = "2.2.0"
     }
+    # see https://registry.terraform.io/providers/dmacvicar/libvirt
     # see https://github.com/dmacvicar/terraform-provider-libvirt
     libvirt = {
       source = "dmacvicar/libvirt"
-      version = "0.6.3"
+      version = "0.6.10"
     }
   }
 }
