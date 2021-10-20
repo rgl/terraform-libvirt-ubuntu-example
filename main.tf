@@ -1,6 +1,5 @@
-# see https://github.com/hashicorp/terraform
 terraform {
-  required_version = "1.0.2"
+#  required_version = "1.0.2"
   required_providers {
     # see https://registry.terraform.io/providers/hashicorp/random
     random = {
@@ -64,6 +63,11 @@ users:
     lock_passwd: false
     ssh-authorized-keys:
       - ${jsonencode(trimspace(file("~/.ssh/id_rsa.pub")))}
+  - name: root
+    lock_passwd: false
+    ssh-authorized-keys:
+      - ${jsonencode(trimspace(file("~/.ssh/id_rsa.pub")))}
+
 disk_setup:
   /dev/sdb:
     table_type: mbr
@@ -84,12 +88,22 @@ EOF
 
 # this uses the vagrant ubuntu image imported from https://github.com/rgl/ubuntu-vagrant.
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.6.3/website/docs/r/volume.html.markdown
+#resource "libvirt_volume" "example_root" {
+#  name = "${var.prefix}_root.img"
+#  base_volume_name = "ubuntu-20.04-amd64_vagrant_box_image_0_box.img"
+#  format = "qcow2"
+#  size = 66*1024*1024*1024 # 66GiB. the root FS is automatically resized by cloud-init growpart (see https://cloudinit.readthedocs.io/en/latest/topics/examples.html#grow-partitions).
+#}
+
 resource "libvirt_volume" "example_root" {
-  name = "${var.prefix}_root.img"
-  base_volume_name = "ubuntu-20.04-amd64_vagrant_box_image_0_box.img"
+  name   = "${var.prefix}_root.img"
+#  pool   = libvirt_pool.ubuntu.name
+#  source = "https://cloud-images.ubuntu.com/releases/xenial/release/ubuntu-16.04-server-cloudimg-amd64-disk1.img"
+  source =  "https://cloud-images.ubuntu.com/releases/hirsute/release/ubuntu-21.04-server-cloudimg-amd64.img"
   format = "qcow2"
-  size = 66*1024*1024*1024 # 66GiB. the root FS is automatically resized by cloud-init growpart (see https://cloudinit.readthedocs.io/en/latest/topics/examples.html#grow-partitions).
+#  size=66*1024*1024*1024 
 }
+
 
 # a data disk.
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.6.3/website/docs/r/volume.html.markdown
@@ -127,6 +141,8 @@ resource "libvirt_domain" "example" {
       <<-EOF
       set -x
       id
+      echo "vagrant      ALL=(ALL:ALL) NOPASSWD:ALL"  >> /etc/sudoers
+      catg /etc/sudoers 
       uname -a
       cat /etc/os-release
       echo "machine-id is $(cat /etc/machine-id)"
@@ -140,7 +156,7 @@ resource "libvirt_domain" "example" {
     ]
     connection {
       type = "ssh"
-      user = "vagrant"
+      user = "root"
       host = self.network_interface[0].addresses[0] # see https://github.com/dmacvicar/terraform-provider-libvirt/issues/660
       private_key = file("~/.ssh/id_rsa")
     }
