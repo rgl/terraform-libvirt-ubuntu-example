@@ -1,12 +1,12 @@
-# Usage (Ubuntu 20.04 host)
+# Usage (Ubuntu 21.04 host)
 
 Create and install the [base Ubuntu vagrant box](https://github.com/rgl/ubuntu-vagrant).
 
 Install Terraform:
 
 ```bash
-wget https://releases.hashicorp.com/terraform/1.0.2/terraform_1.0.2_linux_amd64.zip
-unzip terraform_1.0.2_linux_amd64.zip
+wget https://releases.hashicorp.com/terraform/1.0.9/terraform_1.0.9_linux_arm64.zip
+unzip terraform_1.0.9_linux_amd64.zip
 sudo install terraform /usr/local/bin
 rm terraform terraform_*_linux_amd64.zip
 ```
