@@ -27,6 +27,8 @@ Show information about the libvirt/qemu guest:
 virsh dumpxml terraform_example
 virsh qemu-agent-command terraform_example '{"execute":"guest-info"}' --pretty
 virsh qemu-agent-command terraform_example '{"execute":"guest-network-get-interfaces"}' --pretty
+./qemu-agent-guest-exec terraform_example id
+./qemu-agent-guest-exec terraform_example uname -a
 ssh-keygen -f ~/.ssh/known_hosts -R "$(terraform output --raw ip)"
 ssh "vagrant@$(terraform output --raw ip)"
 ```
