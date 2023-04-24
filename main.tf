@@ -4,18 +4,18 @@ terraform {
   required_providers {
     # see https://registry.terraform.io/providers/hashicorp/random
     random = {
-      source = "hashicorp/random"
+      source  = "hashicorp/random"
       version = "3.4.3"
     }
     # see https://registry.terraform.io/providers/hashicorp/template
     template = {
-      source = "hashicorp/template"
+      source  = "hashicorp/template"
       version = "2.2.0"
     }
     # see https://registry.terraform.io/providers/dmacvicar/libvirt
     # see https://github.com/dmacvicar/terraform-provider-libvirt
     libvirt = {
-      source = "dmacvicar/libvirt"
+      source  = "dmacvicar/libvirt"
       version = "0.7.1"
     }
   }
@@ -31,15 +31,15 @@ variable "prefix" {
 
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.7.1/website/docs/r/network.markdown
 resource "libvirt_network" "example" {
-  name = var.prefix
-  mode = "nat"
-  domain = "example.test"
+  name      = var.prefix
+  mode      = "nat"
+  domain    = "example.test"
   addresses = ["10.17.3.0/24"]
   dhcp {
     enabled = false
   }
   dns {
-    enabled = true
+    enabled    = true
     local_only = false
   }
 }
@@ -53,7 +53,7 @@ resource "libvirt_network" "example" {
 # see https://cloudinit.readthedocs.io/en/latest/topics/datasources/nocloud.html#datasource-nocloud
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.7.1/libvirt/cloudinit_def.go#L133-L162
 resource "libvirt_cloudinit_disk" "example_cloudinit" {
-  name = "${var.prefix}_example_cloudinit.iso"
+  name      = "${var.prefix}_example_cloudinit.iso"
   user_data = <<EOF
 #cloud-config
 fqdn: example.test
@@ -85,18 +85,18 @@ EOF
 # this uses the vagrant ubuntu image imported from https://github.com/rgl/ubuntu-vagrant.
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.7.1/website/docs/r/volume.html.markdown
 resource "libvirt_volume" "example_root" {
-  name = "${var.prefix}_root.img"
+  name             = "${var.prefix}_root.img"
   base_volume_name = "ubuntu-22.04-amd64_vagrant_box_image_0.0.0_box.img"
-  format = "qcow2"
-  size = 66*1024*1024*1024 # 66GiB. the root FS is automatically resized by cloud-init growpart (see https://cloudinit.readthedocs.io/en/latest/topics/examples.html#grow-partitions).
+  format           = "qcow2"
+  size             = 66 * 1024 * 1024 * 1024 # 66GiB. the root FS is automatically resized by cloud-init growpart (see https://cloudinit.readthedocs.io/en/latest/topics/examples.html#grow-partitions).
 }
 
 # a data disk.
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.7.1/website/docs/r/volume.html.markdown
 resource "libvirt_volume" "example_data" {
-  name = "${var.prefix}_data.img"
+  name   = "${var.prefix}_data.img"
   format = "qcow2"
-  size = 6*1024*1024*1024 # 6GiB.
+  size   = 6 * 1024 * 1024 * 1024 # 6GiB.
 }
 
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.7.1/website/docs/r/domain.html.markdown
@@ -105,22 +105,22 @@ resource "libvirt_domain" "example" {
   cpu {
     mode = "host-passthrough"
   }
-  vcpu = 2
-  memory = 1024
+  vcpu       = 2
+  memory     = 1024
   qemu_agent = true
-  cloudinit = libvirt_cloudinit_disk.example_cloudinit.id
+  cloudinit  = libvirt_cloudinit_disk.example_cloudinit.id
   disk {
     volume_id = libvirt_volume.example_root.id
-    scsi = true
+    scsi      = true
   }
   disk {
     volume_id = libvirt_volume.example_data.id
-    scsi = true
+    scsi      = true
   }
   network_interface {
-    network_id = libvirt_network.example.id
+    network_id     = libvirt_network.example.id
     wait_for_lease = true
-    addresses = ["10.17.3.2"]
+    addresses      = ["10.17.3.2"]
   }
   provisioner "remote-exec" {
     inline = [
@@ -139,9 +139,9 @@ resource "libvirt_domain" "example" {
       EOF
     ]
     connection {
-      type = "ssh"
-      user = "vagrant"
-      host = self.network_interface[0].addresses[0] # see https://github.com/dmacvicar/terraform-provider-libvirt/issues/660
+      type        = "ssh"
+      user        = "vagrant"
+      host        = self.network_interface[0].addresses[0] # see https://github.com/dmacvicar/terraform-provider-libvirt/issues/660
       private_key = file("~/.ssh/id_rsa")
     }
   }
