@@ -101,7 +101,8 @@ resource "libvirt_volume" "example_data" {
 
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.7.1/website/docs/r/domain.html.markdown
 resource "libvirt_domain" "example" {
-  name = var.prefix
+  name    = var.prefix
+  machine = "q35"
   cpu {
     mode = "host-passthrough"
   }
@@ -109,6 +110,12 @@ resource "libvirt_domain" "example" {
   memory     = 1024
   qemu_agent = true
   cloudinit  = libvirt_cloudinit_disk.example_cloudinit.id
+  xml {
+    xslt = file("libvirt-domain.xsl")
+  }
+  video {
+    type = "qxl"
+  }
   disk {
     volume_id = libvirt_volume.example_root.id
     scsi      = true
@@ -144,6 +151,12 @@ resource "libvirt_domain" "example" {
       host        = self.network_interface[0].addresses[0] # see https://github.com/dmacvicar/terraform-provider-libvirt/issues/660
       private_key = file("~/.ssh/id_rsa")
     }
+  }
+  lifecycle {
+    ignore_changes = [
+      disk[0].wwn,
+      disk[1].wwn,
+    ]
   }
 }
 
