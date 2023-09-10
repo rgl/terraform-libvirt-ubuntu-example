@@ -1,5 +1,7 @@
 # Usage (Ubuntu 22.04 host)
 
+[![Lint](https://github.com/rgl/terraform-libvirt-ubuntu-example/actions/workflows/lint.yml/badge.svg)](https://github.com/rgl/terraform-libvirt-ubuntu-example/actions/workflows/lint.yml)
+
 Create and install the [base Ubuntu 22.04 vagrant box](https://github.com/rgl/ubuntu-vagrant).
 
 Install Terraform:
