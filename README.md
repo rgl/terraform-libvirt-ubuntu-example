@@ -44,6 +44,12 @@ Destroy the infrastructure:
 time terraform destroy -auto-approve
 ```
 
+List this repository dependencies (and which have newer versions):
+
+```bash
+GITHUB_COM_TOKEN='YOUR_GITHUB_PERSONAL_TOKEN' ./renovate.sh
+```
+
 # Virtual BMC
 
 You can externally control the VM using the following terraform providers:
