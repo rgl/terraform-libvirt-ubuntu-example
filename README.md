@@ -7,8 +7,8 @@ Create and install the [base Ubuntu 22.04 vagrant box](https://github.com/rgl/ub
 Install Terraform:
 
 ```bash
-wget https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_linux_amd64.zip
-unzip terraform_1.8.5_linux_amd64.zip
+wget https://releases.hashicorp.com/terraform/1.9.2/terraform_1.9.2_linux_amd64.zip
+unzip terraform_1.9.2_linux_amd64.zip
 sudo install terraform /usr/local/bin
 rm terraform terraform_*_linux_amd64.zip
 ```
