@@ -13,11 +13,11 @@ gitea_container_name="$(basename "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")
 
 # see https://hub.docker.com/r/gitea/gitea/tags
 # renovate: datasource=docker depName=gitea/gitea
-gitea_version='1.22.1'
+gitea_version='1.24.2'
 
 # see https://hub.docker.com/r/renovate/renovate/tags
-# renovate: datasource=docker depName=renovate/renovate extractVersion=(?<version>.+)-slim$
-renovate_version='37.431.4'
+# renovate: datasource=docker depName=renovate/renovate
+renovate_version='41.1.2'
 
 # clean.
 echo 'Deleting existing Gitea...'
@@ -29,14 +29,14 @@ install -d tmp
 # start gitea in background.
 # see https://docs.gitea.io/en-us/config-cheat-sheet/
 # see https://github.com/go-gitea/gitea/releases
-# see https://github.com/go-gitea/gitea/blob/v1.22.1/docker/root/etc/s6/gitea/setup
+# see https://github.com/go-gitea/gitea/blob/v1.24.2/docker/root/etc/s6/gitea/setup
 echo 'Starting Gitea...'
 docker run \
     --detach \
     --name "$gitea_container_name" \
     -v /etc/timezone:/etc/timezone:ro \
     -v /etc/localtime:/etc/localtime:ro \
-    -e SECRET_KEY=abracadabra \
+    -e SECRET_KEY=opensesame \
     -p 3000 \
     "gitea/gitea:$gitea_version" \
     >/dev/null
@@ -140,6 +140,18 @@ export RENOVATE_REPOSITORIES="$RENOVATE_USERNAME/test"
 export RENOVATE_PR_HOURLY_LIMIT='0'
 export RENOVATE_PR_CONCURRENT_LIMIT='0'
 echo 'Running renovate...'
+# NB to capture the traffic using mitmproxy, start mitmweb in a different
+#    shell, then enable the following if (i.e. true).
+docker_extra_args=()
+if false; then
+    docker_extra_args+=(
+        --env http_proxy=http://127.0.0.1:8080
+        --env https_proxy=http://127.0.0.1:8080
+        --env no_proxy=
+        --env SSL_CERT_FILE=/usr/local/shared/ca-certificates/mitmproxy-ca.crt
+        --volume "$HOME/.mitmproxy/mitmproxy-ca-cert.pem:/usr/local/shared/ca-certificates/mitmproxy-ca.crt:ro"
+    )
+fi
 # NB use --dry-run=lookup for not modifying the repository (e.g. for not
 #    creating pull requests).
 docker run \
@@ -155,7 +167,8 @@ docker run \
   --env RENOVATE_PR_CONCURRENT_LIMIT \
   --env LOG_LEVEL=debug \
   --env LOG_FORMAT=json \
-  "renovate/renovate:$renovate_version-slim" \
+  "${docker_extra_args[@]}" \
+  "renovate/renovate:$renovate_version" \
   --platform=gitea \
   --git-url=endpoint \
   >tmp/renovate-log.json
