@@ -4,14 +4,14 @@
 
 Create and install the [base Ubuntu 22.04 UEFI vagrant box](https://github.com/rgl/ubuntu-vagrant).
 
-Install Terraform:
+Install the dependencies:
 
-```bash
-wget https://releases.hashicorp.com/terraform/1.12.2/terraform_1.12.2_linux_amd64.zip
-unzip terraform_1.12.2_linux_amd64.zip
-sudo install terraform /usr/local/bin
-rm terraform terraform_*_linux_amd64.zip
-```
+* [Visual Studio Code](https://code.visualstudio.com).
+* [Dev Container plugin](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+
+Open this directory with the Dev Container plugin.
+
+Open `bash` inside the Visual Studio Code Terminal.
 
 Create the infrastructure:
 

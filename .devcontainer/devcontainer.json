@@ -1,0 +1,19 @@
+{
+  "name": "Terraform",
+  "dockerFile": "Dockerfile",
+  "runArgs": [
+    "--group-add=120", // 120 is the id of the libvirt group.
+    "-v=${localEnv:HOME}/.ssh/id_rsa:/home/vscode/.ssh/id_rsa:ro",
+    "-v=${localEnv:HOME}/.ssh/id_rsa.pub:/home/vscode/.ssh/id_rsa.pub:ro",
+    "-v=/var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock"
+  ],
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "hashicorp.terraform",
+        "streetsidesoftware.code-spell-checker"
+      ]
+    }
+  }
+}
