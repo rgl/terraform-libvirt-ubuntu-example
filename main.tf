@@ -29,7 +29,7 @@ variable "prefix" {
 # NB this uses the vagrant ubuntu image imported from https://github.com/rgl/ubuntu-vagrant.
 variable "base_volume_name" {
   type    = string
-  default = "ubuntu-22.04-amd64_vagrant_box_image_0.0.0_box_0.img"
+  default = "ubuntu-22.04-uefi-amd64_vagrant_box_image_0.0.0_box_0.img"
 }
 
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/network.markdown
@@ -44,6 +44,11 @@ resource "libvirt_network" "example" {
   dns {
     enabled    = true
     local_only = false
+  }
+  lifecycle {
+    ignore_changes = [
+      dhcp[0].enabled, # see https://github.com/dmacvicar/terraform-provider-libvirt/issues/998
+    ]
   }
 }
 
@@ -104,8 +109,9 @@ resource "libvirt_volume" "example_data" {
 
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/domain.html.markdown
 resource "libvirt_domain" "example" {
-  name    = var.prefix
-  machine = "q35"
+  name     = var.prefix
+  machine  = "q35"
+  firmware = "/usr/share/OVMF/OVMF_CODE.fd"
   cpu {
     mode = "host-passthrough"
   }
@@ -157,6 +163,7 @@ resource "libvirt_domain" "example" {
   }
   lifecycle {
     ignore_changes = [
+      nvram,
       disk[0].wwn,
       disk[1].wwn,
     ]
