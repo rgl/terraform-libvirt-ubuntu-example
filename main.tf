@@ -23,7 +23,7 @@ provider "libvirt" {
 
 variable "prefix" {
   type    = string
-  default = "terraform_example"
+  default = "terraform-ubuntu-example"
 }
 
 # NB this uses the vagrant ubuntu image imported from https://github.com/rgl/ubuntu-vagrant.
@@ -93,7 +93,7 @@ resource "libvirt_cloudinit_disk" "example_cloudinit" {
 # this uses the vagrant ubuntu image imported from https://github.com/rgl/ubuntu-vagrant.
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/volume.html.markdown
 resource "libvirt_volume" "example_root" {
-  name             = "${var.prefix}_root.img"
+  name             = "${var.prefix}-root.img"
   base_volume_name = var.base_volume_name
   format           = "qcow2"
   size             = 66 * 1024 * 1024 * 1024 # 66GiB. the root FS is automatically resized by cloud-init growpart (see https://cloudinit.readthedocs.io/en/latest/topics/examples.html#grow-partitions).
@@ -102,7 +102,7 @@ resource "libvirt_volume" "example_root" {
 # a data disk.
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/volume.html.markdown
 resource "libvirt_volume" "example_data" {
-  name   = "${var.prefix}_data.img"
+  name   = "${var.prefix}-data.img"
   format = "qcow2"
   size   = 6 * 1024 * 1024 * 1024 # 6GiB.
 }

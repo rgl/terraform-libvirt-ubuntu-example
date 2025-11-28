@@ -24,16 +24,16 @@ terraform plan -out=tfplan
 time terraform apply tfplan
 ```
 
-**NB** if you have errors alike `Could not open '/var/lib/libvirt/images/terraform_example_root.img': Permission denied'` you need to reconfigure libvirt by setting `security_driver = "none"` in `/etc/libvirt/qemu.conf` and restart libvirt with `sudo systemctl restart libvirtd`.
+**NB** if you have errors alike `Could not open '/var/lib/libvirt/images/terraform-ubuntu-example-root.img': Permission denied'` you need to reconfigure libvirt by setting `security_driver = "none"` in `/etc/libvirt/qemu.conf` and restart libvirt with `sudo systemctl restart libvirtd`.
 
 Show information about the libvirt/qemu guest:
 
 ```bash
-virsh dumpxml terraform_example
-virsh qemu-agent-command terraform_example '{"execute":"guest-info"}' --pretty
-virsh qemu-agent-command terraform_example '{"execute":"guest-network-get-interfaces"}' --pretty
-./qemu-agent-guest-exec terraform_example id
-./qemu-agent-guest-exec terraform_example uname -a
+virsh dumpxml terraform-ubuntu-example
+virsh qemu-agent-command terraform-ubuntu-example '{"execute":"guest-info"}' --pretty
+virsh qemu-agent-command terraform-ubuntu-example '{"execute":"guest-network-get-interfaces"}' --pretty
+./qemu-agent-guest-exec terraform-ubuntu-example id
+./qemu-agent-guest-exec terraform-ubuntu-example uname -a
 ssh-keygen -f ~/.ssh/known_hosts -R "$(terraform output --raw ip)"
 ssh "vagrant@$(terraform output --raw ip)"
 ```
