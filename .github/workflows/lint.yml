@@ -5,18 +5,18 @@ jobs:
     name: Lint
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Cache the plugins directory
         uses: actions/cache@v4
         with:
           path: ~/.tflint.d/plugins
           key: tflint-${{ hashFiles('.tflint.hcl') }}
-      - uses: terraform-linters/setup-tflint@v4
+      - uses: terraform-linters/setup-tflint@v6
         name: Setup
         with:
           # see https://github.com/terraform-linters/tflint/releases
           # renovate: datasource=github-releases depName=terraform-linters/tflint
-          tflint_version: v0.58.0
+          tflint_version: v0.60.0
       - name: Init
         run: tflint --init
         env:
@@ -28,6 +28,6 @@ jobs:
     name: terraform fmt check
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: terraform fmt check
         run: terraform fmt -check -diff
