@@ -62,32 +62,32 @@ resource "libvirt_network" "example" {
 # see createISO at https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/libvirt/cloudinit_def.go#L139-L168
 resource "libvirt_cloudinit_disk" "example_cloudinit" {
   name      = "${var.prefix}_example_cloudinit.iso"
-  user_data = <<EOF
-#cloud-config
-fqdn: example.test
-manage_etc_hosts: true
-users:
-  - name: vagrant
-    passwd: '$6$rounds=4096$NQ.EmIrGxn$rTvGsI3WIsix9TjWaDfKrt9tm3aa7SX7pzB.PSjbwtLbsplk1HsVzIrZbXwQNce6wmeJXhCq9YFJHDx9bXFHH.'
-    lock_passwd: false
-    ssh-authorized-keys:
-      - ${jsonencode(trimspace(file("~/.ssh/id_rsa.pub")))}
-disk_setup:
-  /dev/sdb:
-    table_type: mbr
-    layout:
-      - [100, 83]
-    overwrite: false
-fs_setup:
-  - label: data
-    device: /dev/sdb1
-    filesystem: ext4
-    overwrite: false
-mounts:
-  - [/dev/sdb1, /data, ext4, 'defaults,discard,nofail', '0', '2']
-runcmd:
-  - sed -i '/vagrant insecure public key/d' /home/vagrant/.ssh/authorized_keys
-EOF
+  user_data = <<-EOF
+  #cloud-config
+  fqdn: example.test
+  manage_etc_hosts: true
+  users:
+    - name: vagrant
+      passwd: '$6$rounds=4096$NQ.EmIrGxn$rTvGsI3WIsix9TjWaDfKrt9tm3aa7SX7pzB.PSjbwtLbsplk1HsVzIrZbXwQNce6wmeJXhCq9YFJHDx9bXFHH.'
+      lock_passwd: false
+      ssh-authorized-keys:
+        - ${jsonencode(trimspace(file("~/.ssh/id_rsa.pub")))}
+  disk_setup:
+    /dev/sdb:
+      table_type: mbr
+      layout:
+        - [100, 83]
+      overwrite: false
+  fs_setup:
+    - label: data
+      device: /dev/sdb1
+      filesystem: ext4
+      overwrite: false
+  mounts:
+    - [/dev/sdb1, /data, ext4, 'defaults,discard,nofail', '0', '2']
+  runcmd:
+    - sed -i '/vagrant insecure public key/d' /home/vagrant/.ssh/authorized_keys
+  EOF
 }
 
 # this uses the vagrant ubuntu image imported from https://github.com/rgl/ubuntu-vagrant.
