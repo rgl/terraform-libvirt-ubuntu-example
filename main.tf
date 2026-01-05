@@ -74,7 +74,7 @@ resource "libvirt_cloudinit_disk" "example_cloudinit" {
         - ${jsonencode(trimspace(file("~/.ssh/id_rsa.pub")))}
   disk_setup:
     /dev/sdb:
-      table_type: mbr
+      table_type: gpt
       layout:
         - [100, 83]
       overwrite: false
