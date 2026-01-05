@@ -29,7 +29,7 @@ variable "prefix" {
 # NB this uses the vagrant ubuntu image imported from https://github.com/rgl/ubuntu-vagrant.
 variable "base_volume_name" {
   type    = string
-  default = "ubuntu-22.04-uefi-amd64_vagrant_box_image_0.0.0_box_0.img"
+  default = "ubuntu-24.04-uefi-amd64_vagrant_box_image_0.0.0_box_0.img"
 }
 
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/network.markdown
@@ -111,7 +111,7 @@ resource "libvirt_volume" "example_data" {
 resource "libvirt_domain" "example" {
   name     = var.prefix
   machine  = "q35"
-  firmware = "/usr/share/OVMF/OVMF_CODE.fd"
+  firmware = "/usr/share/OVMF/OVMF_CODE_4M.fd"
   cpu {
     mode = "host-passthrough"
   }
@@ -152,7 +152,7 @@ resource "libvirt_domain" "example" {
       hostname --fqdn
       cat /etc/hosts
       sudo sfdisk -l
-      lsblk -x KNAME -o KNAME,SIZE,TRAN,SUBSYSTEMS,FSTYPE,UUID,LABEL,MODEL,SERIAL
+      lsblk -x KNAME -o KNAME,SIZE,TRAN,SUBSYSTEMS,FSTYPE,UUID,LABEL,MODEL,SERIAL | cat
       mount | grep ^/dev
       df -h
       EOF
