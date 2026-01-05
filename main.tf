@@ -141,7 +141,10 @@ resource "libvirt_domain" "example" {
   provisioner "remote-exec" {
     inline = [
       <<-EOF
-      set -x
+      #!/usr/bin/bash
+      set -eux
+      sudo cloud-init schema --system --annotate
+      sudo cloud-init status --long --wait
       id
       uname -a
       cat /etc/os-release
