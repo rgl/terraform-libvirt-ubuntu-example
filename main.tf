@@ -114,9 +114,10 @@ resource "libvirt_volume" "example_data" {
 
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/domain.html.markdown
 resource "libvirt_domain" "example" {
-  name     = var.prefix
-  machine  = "q35"
-  firmware = "/usr/share/OVMF/OVMF_CODE_4M.fd"
+  name        = var.prefix
+  description = "created from ${path.cwd}"
+  machine     = "q35"
+  firmware    = "/usr/share/OVMF/OVMF_CODE_4M.fd"
   cpu {
     mode = "host-passthrough"
   }
