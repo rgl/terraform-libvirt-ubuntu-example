@@ -37,6 +37,11 @@ variable "network_cidr" {
   default = "10.17.4.0/24"
 }
 
+# see https://gitlab.com/libosinfo/osinfo-db/-/tree/main/data/os/ubuntu.com/ubuntu-24.04.xml.in
+locals {
+  os_id = "http://ubuntu.com/ubuntu/${regex("ubuntu-([^-]+)", var.base_volume_name)[0]}"
+}
+
 # see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/network.markdown
 resource "libvirt_network" "example" {
   name      = var.prefix
@@ -126,7 +131,9 @@ resource "libvirt_domain" "example" {
   qemu_agent = true
   cloudinit  = libvirt_cloudinit_disk.example_cloudinit.id
   xml {
-    xslt = file("libvirt-domain.xsl")
+    xslt = templatefile("libvirt-domain.xsl.tpl", {
+      os_id = local.os_id
+    })
   }
   video {
     type = "qxl"

@@ -13,6 +13,16 @@
       <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
+  <xsl:template match="/domain/description">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+    <metadata>
+      <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
+        <libosinfo:os id="${os_id}"/>
+      </libosinfo:libosinfo>
+    </metadata>
+  </xsl:template>
   <xsl:template match="/domain/devices/disk[@device='cdrom']/target/@bus">
     <xsl:attribute name="bus">
       <xsl:value-of select="'scsi'"/>
