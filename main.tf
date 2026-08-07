@@ -29,7 +29,7 @@ variable "prefix" {
 # NB this uses the vagrant ubuntu image imported from https://github.com/rgl/ubuntu-vagrant.
 variable "base_volume_name" {
   type    = string
-  default = "ubuntu-24.04-uefi-amd64_vagrant_box_image_0.0.0_box_0.img"
+  default = "ubuntu-26.04-uefi-amd64_vagrant_box_image_0.0.0_box_0.img"
 }
 
 variable "network_cidr" {
@@ -37,7 +37,7 @@ variable "network_cidr" {
   default = "10.17.4.0/24"
 }
 
-# see https://gitlab.com/libosinfo/osinfo-db/-/tree/main/data/os/ubuntu.com/ubuntu-24.04.xml.in
+# see https://gitlab.com/libosinfo/osinfo-db/-/tree/main/data/os/ubuntu.com/ubuntu-26.04.xml.in
 locals {
   os_id = "http://ubuntu.com/ubuntu/${regex("ubuntu-([^-]+)", var.base_volume_name)[0]}"
 }

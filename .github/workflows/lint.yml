@@ -3,7 +3,7 @@ on: [push]
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - uses: hashicorp/setup-terraform@v4
@@ -30,7 +30,7 @@ jobs:
         run: tflint --format compact
   fmt:
     name: terraform fmt check
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - uses: hashicorp/setup-terraform@v4
