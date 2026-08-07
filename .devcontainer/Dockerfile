@@ -1,12 +1,12 @@
-# syntax=docker.io/docker/dockerfile:1.25
+# syntax=docker.io/docker/dockerfile:1.26
 
 # see https://github.com/hashicorp/terraform/releases
 # renovate: datasource=github-releases depName=hashicorp/terraform
-ARG TERRAFORM_VERSION='1.15.7'
+ARG TERRAFORM_VERSION='1.15.8'
 
 # see https://github.com/devcontainers/images/blob/main/src/base-debian/manifest.json
 # see https://github.com/devcontainers/images/tree/main/src/base-debian/history
-FROM mcr.microsoft.com/devcontainers/base:2.1.11-trixie
+FROM mcr.microsoft.com/devcontainers/base:2.1.13-trixie
 
 RUN <<'EOF'
 #!/usr/bin/bash

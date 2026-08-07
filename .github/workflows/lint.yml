@@ -9,7 +9,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v4
         with:
           # renovate: datasource=github-releases depName=hashicorp/terraform
-          terraform_version: "1.15.7"
+          terraform_version: "1.15.8"
       - name: Cache the plugins directory
         uses: actions/cache@v6
         with:
@@ -20,7 +20,7 @@ jobs:
         with:
           # see https://github.com/terraform-linters/tflint/releases
           # renovate: datasource=github-releases depName=terraform-linters/tflint
-          tflint_version: v0.63.1
+          tflint_version: v0.64.0
       - name: Init
         run: tflint --init
         env:
@@ -32,10 +32,10 @@ jobs:
     name: terraform fmt check
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: hashicorp/setup-terraform@v4
         with:
           # renovate: datasource=github-releases depName=hashicorp/terraform
-          terraform_version: "1.15.7"
+          terraform_version: "1.15.8"
       - name: terraform fmt check
         run: terraform fmt -check -diff
