@@ -9,7 +9,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v4
         with:
           # renovate: datasource=github-releases depName=hashicorp/terraform
-          terraform_version: "1.15.8"
+          terraform_version: "1.16.0"
       - name: Cache the plugins directory
         uses: actions/cache@v6
         with:
@@ -36,6 +36,6 @@ jobs:
       - uses: hashicorp/setup-terraform@v4
         with:
           # renovate: datasource=github-releases depName=hashicorp/terraform
-          terraform_version: "1.15.8"
+          terraform_version: "1.16.0"
       - name: terraform fmt check
         run: terraform fmt -check -diff
