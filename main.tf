@@ -12,7 +12,7 @@ terraform {
     # see https://github.com/dmacvicar/terraform-provider-libvirt
     libvirt = {
       source  = "dmacvicar/libvirt"
-      version = "0.8.3"
+      version = "0.9.9"
     }
   }
 }
@@ -42,37 +42,57 @@ locals {
   os_id = "http://ubuntu.com/ubuntu/${regex("ubuntu-([^-]+)", var.base_volume_name)[0]}"
 }
 
-# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/network.markdown
+# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.9/docs/resources/network
+# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.9/docs/resources/network.md
 resource "libvirt_network" "example" {
-  name      = var.prefix
-  mode      = "nat"
-  domain    = "example.test"
-  addresses = [var.network_cidr]
-  dhcp {
-    enabled = false
+  name = var.prefix
+  forward = {
+    nat = {
+      ports = [
+        {
+          start = 1024
+          end   = 65535
+        }
+      ]
+    }
   }
-  dns {
-    enabled    = true
-    local_only = false
-  }
-  lifecycle {
-    ignore_changes = [
-      dhcp[0].enabled, # see https://github.com/dmacvicar/terraform-provider-libvirt/issues/998
-    ]
-  }
+  ips = [
+    {
+      address = cidrhost(var.network_cidr, 1)
+      netmask = cidrnetmask(var.network_cidr)
+      dhcp = {
+        ranges = [
+          {
+            start = cidrhost(var.network_cidr, 2)
+            end   = cidrhost(var.network_cidr, -2)
+          }
+        ]
+      }
+    }
+  ]
 }
 
 # create a cloud-init cloud-config.
 # NB this creates an iso image that will be used by the NoCloud cloud-init datasource.
-# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/cloudinit.html.markdown
 # see journalctl -u cloud-init
 # see /run/cloud-init/*.log
 # see https://cloudinit.readthedocs.io/en/latest/topics/examples.html#disk-setup
 # see https://cloudinit.readthedocs.io/en/latest/topics/datasources/nocloud.html#datasource-nocloud
-# see createISO at https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/libvirt/cloudinit_def.go#L139-L168
-resource "libvirt_cloudinit_disk" "example_cloudinit" {
-  name      = "${var.prefix}_example_cloudinit.iso"
-  user_data = <<-EOF
+# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.9/docs/resources/cloudinit_disk
+# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.9/docs/resources/cloudinit_disk.md
+# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.9/internal/provider/cloudinit_disk_resource.go#L291-L341
+resource "libvirt_cloudinit_disk" "example" {
+  name           = "${var.prefix}_example_cloudinit.iso"
+  network_config = <<-EOF
+  version: 2
+  ethernets:
+    eth0:
+      dhcp4: true
+      dhcp6: false
+  EOF
+  meta_data      = <<-EOF
+  EOF
+  user_data      = <<-EOF
   #cloud-config
   fqdn: example.test
   manage_etc_hosts: true
@@ -83,79 +103,241 @@ resource "libvirt_cloudinit_disk" "example_cloudinit" {
       ssh_authorized_keys:
         - ${jsonencode(trimspace(file("~/.ssh/id_rsa.pub")))}
   disk_setup:
-    /dev/sdb:
+    /dev/disk/by-id/wwn-0x000000000000ab00:
       table_type: gpt
       layout:
         - [100, 83]
       overwrite: false
   fs_setup:
     - label: data
-      device: /dev/sdb1
+      device: /dev/disk/by-id/wwn-0x000000000000ab00-part1
       filesystem: ext4
       overwrite: false
   mounts:
-    - [/dev/sdb1, /data, ext4, 'defaults,discard,nofail', '0', '2']
+    - [/dev/disk/by-id/wwn-0x000000000000ab00-part1, /data, ext4, 'defaults,discard,nofail', '0', '2']
   runcmd:
     - sed -i '/vagrant insecure public key/d' /home/vagrant/.ssh/authorized_keys
   EOF
 }
 
+# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.9/docs/resources/volume
+# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.9/docs/resources/volume.md
+resource "libvirt_volume" "example_cloudinit" {
+  pool = "default"
+  name = "${var.prefix}-cloudinit.iso"
+  create = {
+    content = {
+      url = libvirt_cloudinit_disk.example.path
+    }
+  }
+}
+
 # this uses the vagrant ubuntu image imported from https://github.com/rgl/ubuntu-vagrant.
-# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/volume.html.markdown
+# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.9/docs/resources/volume
+# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.9/docs/resources/volume.md
 resource "libvirt_volume" "example_root" {
-  name             = "${var.prefix}-root.img"
-  base_volume_name = var.base_volume_name
-  format           = "qcow2"
-  size             = 66 * 1024 * 1024 * 1024 # 66GiB. the root FS is automatically resized by cloud-init growpart (see https://cloudinit.readthedocs.io/en/latest/topics/examples.html#grow-partitions).
+  pool     = "default"
+  name     = "${var.prefix}-root.img"
+  capacity = 66 * 1024 * 1024 * 1024 # GiB. the root FS is automatically resized by cloud-init growpart (see https://cloudinit.readthedocs.io/en/latest/topics/examples.html#grow-partitions).
+  target = {
+    format = {
+      type = "qcow2"
+    }
+  }
+  backing_store = {
+    format = {
+      type = "qcow2"
+    }
+    path = "/var/lib/libvirt/images/${var.base_volume_name}"
+  }
 }
 
 # a data disk.
-# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/volume.html.markdown
+# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.9/docs/resources/volume
+# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.9/docs/resources/volume.md
 resource "libvirt_volume" "example_data" {
-  name   = "${var.prefix}-data.img"
-  format = "qcow2"
-  size   = 6 * 1024 * 1024 * 1024 # 6GiB.
+  pool     = "default"
+  name     = "${var.prefix}-data.img"
+  capacity = 6 * 1024 * 1024 * 1024 # GiB.
+  target = {
+    format = {
+      type = "qcow2"
+    }
+  }
 }
 
-# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.8.3/website/docs/r/domain.html.markdown
+# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.9/docs/resources/domain
+# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.9/docs/resources/domain.md
 resource "libvirt_domain" "example" {
   name        = var.prefix
   description = "created from ${path.cwd}"
-  machine     = "q35"
-  firmware    = "/usr/share/OVMF/OVMF_CODE_4M.fd"
-  cpu {
+  running     = true
+  type        = "kvm"
+  vcpu        = 2
+  memory      = 1024
+  memory_unit = "MiB"
+  features = {
+    acpi = true
+    apic = {}
+    pae  = true
+  }
+  metadata = {
+    xml = <<-EOF
+      <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
+        <libosinfo:os id="${local.os_id}"/>
+      </libosinfo:libosinfo>
+      EOF
+  }
+  os = {
+    type         = "hvm"
+    type_arch    = "x86_64"
+    type_machine = "q35"
+    firmware     = "efi"
+  }
+  cpu = {
     mode = "host-passthrough"
   }
-  vcpu       = 2
-  memory     = 1024
-  qemu_agent = true
-  cloudinit  = libvirt_cloudinit_disk.example_cloudinit.id
-  xml {
-    xslt = templatefile("libvirt-domain.xsl.tpl", {
-      os_id = local.os_id
-    })
+  devices = {
+    graphics = [
+      {
+        spice = {
+          auto_port = true
+          listeners = [
+            {
+              address = {}
+            }
+          ]
+        }
+      }
+    ]
+    videos = [
+      {
+        model = {
+          type    = "qxl"
+          primary = "yes"
+          vram    = 65536
+          ram     = 65536
+          vga_mem = 16384
+          heads   = 1
+        }
+      }
+    ]
+    controllers = [
+      {
+        type  = "scsi"
+        model = "virtio-scsi"
+      },
+      {
+        type = "virtio-serial"
+      }
+    ]
+    channels = [
+      {
+        source = {
+          unix = {
+            mode = "bind"
+          }
+        }
+        target = {
+          virt_io = {
+            name = "org.qemu.guest_agent.0"
+          }
+        }
+      },
+      {
+        source = {
+          spice_vmc = true
+        }
+        target = {
+          virt_io = {
+            name = "com.redhat.spice.0"
+          }
+        }
+      }
+    ]
+    rngs = [
+      {
+        model = "virtio"
+        backend = {
+          random = "/dev/urandom"
+        }
+      }
+    ]
+    disks = [
+      {
+        driver = {
+          name = "qemu"
+          type = "qcow2"
+        }
+        source = {
+          volume = {
+            pool   = libvirt_volume.example_root.pool
+            volume = libvirt_volume.example_root.name
+          }
+        }
+        target = {
+          bus = "scsi"
+          dev = "sda"
+        }
+        wwn = format("000000000000aa%02x", 0)
+      },
+      {
+        driver = {
+          name = "qemu"
+          type = "qcow2"
+        }
+        source = {
+          volume = {
+            pool   = libvirt_volume.example_data.pool
+            volume = libvirt_volume.example_data.name
+          }
+        }
+        target = {
+          bus = "scsi"
+          dev = "sdb"
+        }
+        wwn = format("000000000000ab%02x", 0)
+      },
+      {
+        device = "cdrom"
+        source = {
+          volume = {
+            pool   = libvirt_volume.example_cloudinit.pool
+            volume = libvirt_volume.example_cloudinit.name
+          }
+        }
+        target = {
+          bus = "scsi"
+          dev = "hdd"
+        }
+        serial = "cloudinit"
+      }
+    ]
+    interfaces = [
+      {
+        type = "network"
+        model = {
+          type = "virtio"
+        }
+        source = {
+          network = {
+            network = libvirt_network.example.name
+          }
+        }
+        wait_for_ip = {}
+      }
+    ]
   }
-  video {
-    type = "qxl"
-  }
-  disk {
-    volume_id = libvirt_volume.example_root.id
-    scsi      = true
-  }
-  disk {
-    volume_id = libvirt_volume.example_data.id
-    scsi      = true
-  }
-  network_interface {
-    network_id     = libvirt_network.example.id
-    wait_for_lease = true
-    addresses      = [cidrhost(var.network_cidr, 2)]
-  }
+}
+
+# see https://developer.hashicorp.com/terraform/language/resources/terraform-data
+resource "terraform_data" "example_provision" {
   provisioner "remote-exec" {
     inline = [
       <<-EOF
       #!/usr/bin/bash
       set -eux
+      sudo cloud-init --version
       sudo cloud-init schema --system --annotate
       sudo cloud-init status --long --wait
       id
@@ -166,26 +348,27 @@ resource "libvirt_domain" "example" {
       cat /etc/hosts
       sudo sfdisk -l
       lsblk -x KNAME -o KNAME,SIZE,TRAN,SUBSYSTEMS,FSTYPE,UUID,LABEL,MODEL,SERIAL | cat
-      mount | grep ^/dev
+      mount | grep -E '^/dev/' | sort
+      cat /etc/fstab | grep -E '^\s*[^#]' | sort
       df -h
+      sudo tune2fs -l "$(findmnt -n -o SOURCE /data)"
       EOF
     ]
     connection {
       type        = "ssh"
       user        = "vagrant"
-      host        = self.network_interface[0].addresses[0] # see https://github.com/dmacvicar/terraform-provider-libvirt/issues/660
+      host        = data.libvirt_domain_interface_addresses.example.interfaces[0].addrs[0].addr
       private_key = file("~/.ssh/id_rsa")
     }
   }
-  lifecycle {
-    ignore_changes = [
-      nvram,
-      disk[0].wwn,
-      disk[1].wwn,
-    ]
-  }
+}
+
+# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.9/docs/data-sources/domain_interface_addresses
+# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.9/docs/data-sources/domain_interface_addresses.md
+data "libvirt_domain_interface_addresses" "example" {
+  domain = libvirt_domain.example.name
 }
 
 output "ip" {
-  value = length(libvirt_domain.example.network_interface[0].addresses) > 0 ? libvirt_domain.example.network_interface[0].addresses[0] : ""
+  value = data.libvirt_domain_interface_addresses.example.interfaces[0].addrs[0].addr
 }

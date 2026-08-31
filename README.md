@@ -36,6 +36,8 @@ virsh qemu-agent-command terraform-ubuntu-example '{"execute":"guest-network-get
 ./qemu-agent-guest-exec terraform-ubuntu-example uname -a
 ssh-keygen -f ~/.ssh/known_hosts -R "$(terraform output --raw ip)"
 ssh "vagrant@$(terraform output --raw ip)"
+cat /etc/os-release
+exit
 ```
 
 Destroy the infrastructure:
